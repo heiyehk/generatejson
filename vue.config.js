@@ -26,5 +26,6 @@ module.exports = {
     }
   },
 
-  outputDir: 'dist/createapi'
+  outputDir: 'dist/createapi',
+  publicPath: process.env.NODE_ENV === 'production' ? '/createapi/' : '/',
 }
