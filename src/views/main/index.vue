@@ -12,8 +12,8 @@
       <div class="r-t-h flex-items">
         <a @click="viewStatus = true;">{{$t('guide')}}</a>
         <a @click="aboutStatus = true;">{{$t('about')}}</a>
-        <a @click="optionsStatus = true;">{{$t('options')}}</a>
-        <Select v-model="$i18n.locale" :list="oplist" label="label" val="value" style="width: 120px;"></Select>
+        <!-- <a @click="optionsStatus = true;">{{$t('options')}}</a> -->
+        <Select v-model="$i18n.locale" :list="oplist" label="label" val="value" style="width: 120px;margin-left: 20px;"></Select>
       </div>
     </div>
     <div class="code-content flex-between flex1">
@@ -30,7 +30,7 @@
             :class="isAmplification && displayType === 'code' ? 'icon-zoomout' : 'icon-amplification'"
             @click="amplification($event, 'code')"
           ></i>
-          <i class="iconfont icon-save" title="保存" @click="saveCode"></i>
+          <!-- <i class="iconfont icon-save" title="保存" @click="saveCode"></i> -->
         </div>
       </div>
       <div class="c-cc-line" @mousedown="lineDown" @mouseup="lineUp" :style="linStyle">=</div>

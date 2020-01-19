@@ -1,15 +1,20 @@
 <template>
-  <button class="c-button" :class="type">
+  <button class="c-button" :class="type" @click="click">
     <slot></slot>
   </button>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-property-decorator';
+import { Vue, Component, Prop, Emit } from 'vue-property-decorator';
 
 @Component
 export default class Button extends Vue {
   @Prop({ default: 'info' }) private type?: string;
+
+  @Emit('click')
+  private click(e: Event) {
+    return e;
+  }
 }
 </script>
 

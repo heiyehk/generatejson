@@ -63,6 +63,7 @@ export default class Select extends Vue {
   private mounted() {
     const filterLists = (this.list as ListTypes[]).filter(x => x[this.val] === this.value)[0];
     this.activeSelect = filterLists[this.label];
+    document.addEventListener('click', this.contains);
   }
 
   @Emit('input')
@@ -77,6 +78,17 @@ export default class Select extends Vue {
   @Emit('on-change')
   private change(value: string) {
     return value;
+  }
+
+  private contains(e: MouseEvent) {
+    if (!(e.target as Node).contains(this.$el.children[0])) {
+      this.show = false;
+    }
+  }
+
+  private destroyed() {
+    // 消除esc按下事件
+    document.removeEventListener('click', this.contains);
   }
 }
 </script>
