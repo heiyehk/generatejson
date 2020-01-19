@@ -10,11 +10,12 @@ module.exports = {
     .loader('markdown-loader')
     .end()
   },
+
   pluginOptions: {
     'style-resources-loader': {
       preProcessor: 'less',
       patterns: [
-        'F:\\code\\frontend\\platform\\createapiweb\\src\\less\\index.less'
+        path.resolve(__dirname, './src/less/index.less')
       ]
     },
     i18n: {
@@ -23,5 +24,7 @@ module.exports = {
       localeDir: 'locales',
       enableInSFC: false
     }
-  }
+  },
+
+  outputDir: 'dist/createapi'
 }
