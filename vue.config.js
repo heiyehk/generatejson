@@ -19,8 +19,8 @@ module.exports = {
       ]
     },
     i18n: {
-      locale: 'n',
-      fallbackLocale: 'n',
+      locale: 'zh',
+      fallbackLocale: 'zh',
       localeDir: 'locales',
       enableInSFC: false
     }
