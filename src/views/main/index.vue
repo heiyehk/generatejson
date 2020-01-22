@@ -12,7 +12,8 @@
       <div class="r-t-h flex-items">
         <a @click="viewStatus = true;">{{$t('guide')}}</a>
         <a @click="aboutStatus = true;">{{$t('about')}}</a>
-        <!-- <a @click="optionsStatus = true;">{{$t('options')}}</a> -->
+        <!-- <a @click="aboutStatus = true;">{{$t('version')}}</a> -->
+        <a @click="optionsStatus = true;">{{$t('options')}}</a>
         <Select v-model="$i18n.locale" :list="oplist" label="label" val="value" style="width: 120px;margin-left: 20px;"></Select>
       </div>
     </div>
@@ -30,7 +31,7 @@
             :class="isAmplification && displayType === 'code' ? 'icon-zoomout' : 'icon-amplification'"
             @click="amplification($event, 'code')"
           ></i>
-          <!-- <i class="iconfont icon-save" title="保存" @click="saveCode"></i> -->
+          <i class="iconfont icon-save" title="保存" @click="saveCode"></i>
         </div>
       </div>
       <div class="c-cc-line" @mousedown="lineDown" @mouseup="lineUp" :style="linStyle">=</div>
@@ -59,9 +60,11 @@
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
+import Utils from '@/utils/util';
 
 // 组件
 import drawer from '@/components/drawer.vue';
+import model from '@/components/model.vue';
 import cover from '@/components/cover.vue';
 import options from './components/options.vue';
 
@@ -89,6 +92,12 @@ import 'codemirror/addon/edit/closebrackets';
 import documentMd from '@/markdown/guide.md';
 // @ts-ignore
 import aboutMd from '@/markdown/about.md';
+
+interface LocalDataType {
+  time: string;
+  json: string;
+}
+
 @Component({
   components: {
     drawer,
@@ -107,10 +116,6 @@ export default class Main extends Vue {
       value: 'en'
     }
   ];
-  public $refs: {
-    editor: HTMLTextAreaElement;
-    mockjson: HTMLTextAreaElement;
-  };
   private editor: codemirror.Editor;
   private demoCode: string = `{
   "data|20": [
@@ -151,10 +156,14 @@ export default class Main extends Vue {
   private isAmplification: boolean = false;
   private displayType: string = '';
 
+  // 显示
   private viewStatus: boolean = false;
   private aboutStatus: boolean = false;
   private optionsStatus: boolean = false;
   private shows: boolean = true;
+
+  // 缓存
+  private localData: LocalDataType[] = [];
 
   get linStyle(): string {
     return `left: ${this.clientX};`;
@@ -168,6 +177,15 @@ export default class Main extends Vue {
   }
 
   private created() {
+    const localData: string | null = localStorage.getItem('createapi');
+    if (localData) {
+      try {
+        this.localData = JSON.parse(localData);
+      } catch (error) {
+        this.localData = [];
+        // this.errorMessage = '本地缓存数据出错，请检查';
+      }
+    }
     this.documentHtml = documentMd;
     this.aboutHtml = aboutMd;
     document.addEventListener('keydown', this.keydownEsc);
@@ -181,7 +199,7 @@ export default class Main extends Vue {
   }
 
   private editorInit() {
-    this.editor = codemirror.fromTextArea(this.$refs.editor, {
+    this.editor = codemirror.fromTextArea(this.$refs.editor as HTMLTextAreaElement, {
       value: this.defaultCode,
       mode: { name: 'javascript', json: true },
       lineNumbers: true, // 显示行号
@@ -190,7 +208,7 @@ export default class Main extends Vue {
       autoCloseBrackets: true, // 自动关闭
       gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
     });
-    this.mockJson = codemirror.fromTextArea(this.$refs.mockjson, {
+    this.mockJson = codemirror.fromTextArea(this.$refs.mockjson as HTMLTextAreaElement, {
       mode: { name: 'javascript', json: true },
       lineNumbers: true, // 显示行号
       smartIndent: true, // 自动缩进
@@ -227,7 +245,12 @@ export default class Main extends Vue {
 
   // 保存
   private saveCode() {
-    console.log(this.editor.getValue());
+    // const data: LocalDataType = {
+    //   time: Utils.getTime('YYYY-MM-DD'),
+    //   json: this.editor.getValue()
+    // };
+    // this.localData.push(data);
+    // localStorage.setItem('createapi', JSON.stringify(this.localData));
   }
 
   // 重置
@@ -269,16 +292,6 @@ export default class Main extends Vue {
     }
   }
 
-  // 查看指南
-  private viewGuide() {
-    this.viewStatus = true;
-  }
-
-  // 查看关于
-  private viewAbout() {
-    console.log(cover);
-  }
-
   // 放大缩小
   private amplification(e: Event, type: string) {
     if (this.isAmplification) {
@@ -292,14 +305,25 @@ export default class Main extends Vue {
 
   // esc按下
   private keydownEsc(e: KeyboardEvent) {
-    if (e.keyCode === 27 && this.isAmplification) {
-      this.isAmplification = false;
-      this.displayType = '';
+    if (e.keyCode === 27) {
+      if (this.isAmplification) {
+        this.isAmplification = false;
+        this.displayType = '';
+      }
+      this.viewStatus = false;
+      this.aboutStatus = false;
+      this.optionsStatus = false;
     }
   }
 
   private mockDataDownload() {
-    const blob: Blob = new Blob([this.mockJson.getValue()], {
+    const mockJsonData = this.mockJson.getValue();
+    if (!mockJsonData || !/^\[(.+|)\]$/.test(mockJsonData)) {
+      this.mockJson.setValue('Please generate data first!');
+      this.mockJson.setOption('mode', 'text/text');
+      return;
+    }
+    const blob: Blob = new Blob([mockJsonData], {
       type: 'type/json'
     });
     const documentA = document.createElement('a');
@@ -323,6 +347,7 @@ export default class Main extends Vue {
   height: 100%;
 }
 .top-header {
+  user-select: none;
   height: 50px;
   padding: 0 20px;
   box-sizing: border-box;
@@ -344,7 +369,7 @@ export default class Main extends Vue {
       font-size: 14px;
       margin-left: 20px;
       display: block;
-      padding: 5px 20px;
+      padding: 5px 14px;
       background-color: #ffffff;
       transition: background-color 0.3s;
       &:first-child {

@@ -9,7 +9,7 @@ import { Vue, Component, Prop, Emit } from 'vue-property-decorator';
 
 @Component
 export default class Button extends Vue {
-  @Prop({ default: 'info' }) private type?: string;
+  @Prop() private type?: string;
 
   @Emit('click')
   private click(e: Event) {
@@ -25,23 +25,28 @@ button {
   border-radius: 3px;
   border: none;
   opacity: 1;
-  color: #fff;
+  color: #333;
   margin: 0 20px;
   opacity: 0.9;
   &:hover {
     opacity: 0.8;
+    color: @primary;
+    background-color: #ecf5ff;
   }
   &:active {
     opacity: 1;
   }
 }
 .primary {
-  background-color: @primary;
+  background-color: @primary !important;
+  color: #fff !important;
 }
 .success {
-  background-color: @success;
+  background-color: @success !important;
+  color: #fff !important;
 }
 .gray {
-  background-color: @gray;
+  background-color: @gray !important;
+  color: #fff !important;
 }
 </style>

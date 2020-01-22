@@ -61,7 +61,9 @@ export default class Select extends Vue {
   }
 
   private mounted() {
-    const filterLists = (this.list as ListTypes[]).filter(x => x[this.val] === this.value)[0];
+    const filterLists = (this.list as ListTypes[]).filter(
+      x => x[this.val] === this.value
+    )[0];
     this.activeSelect = filterLists[this.label];
     document.addEventListener('click', this.contains);
   }

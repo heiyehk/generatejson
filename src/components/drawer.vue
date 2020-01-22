@@ -1,14 +1,14 @@
 <template>
   <div class="drawer" v-if="viewStatus" :style="drawerStyle">
     <div class="d-content">
-      <div class="d-c-top flex-between" v-if="title">
-        <h1 class="c-t-l">{{title}}</h1>
+      <div class="d-c-top flex-between">
+        <h1 class="c-t-l" v-if="title">{{title}}</h1>
         <div class="c-t-r">
-          <i class="el-icon-close" @click="change"></i>
+          <i class="iconfont icon-close" @click="close"></i>
         </div>
       </div>
-      <div class="d-c-context markdown-body" v-if="content" v-html="content">{{content}}</div>
-      <div class="d-c-context" v-else>
+      <div class="d-c-context markdown-body" :style="drawerContentStyle" v-if="content" v-html="content">{{content}}</div>
+      <div class="d-c-context" :style="drawerContentStyle" v-else>
         <slot></slot>
       </div>
     </div>
@@ -36,8 +36,19 @@ export default class Drawer extends Vue {
     return `width: ${this.width}`;
   }
 
+  get drawerContentStyle(): string {
+    return `height: ${this.title ? 'calc(100% - 60px)' : '100%'};`;
+  }
+
   @Emit('input')
   private change() {
+    this.viewStatus = false;
+    return this.viewStatus;
+  }
+
+  @Emit('on-close')
+  private close() {
+    this.change();
     this.viewStatus = false;
     return this.viewStatus;
   }
@@ -68,10 +79,11 @@ export default class Drawer extends Vue {
   height: 60px;
   padding: 0 20px;
   box-shadow: 0 0 6px 0 #ccc;
+  position: relative;
   h1 {
     font-size: 24px;
   }
-  .el-icon-close {
+  .iconfont {
     font-size: 22px;
     background-color: #fff;
     transition: background-color 0.3s;
@@ -84,7 +96,6 @@ export default class Drawer extends Vue {
 }
 .d-c-context {
   padding: 20px;
-  height: calc(100% - 60px);
   box-sizing: border-box;
   overflow-y: auto;
 }

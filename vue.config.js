@@ -11,6 +11,9 @@ module.exports = {
     .end()
   },
 
+  outputDir: 'dist/createapi',
+  publicPath: process.env.NODE_ENV === 'production' ? '/createapi/' : '/',
+
   pluginOptions: {
     'style-resources-loader': {
       preProcessor: 'less',
@@ -24,8 +27,5 @@ module.exports = {
       localeDir: 'locales',
       enableInSFC: false
     }
-  },
-
-  outputDir: 'dist/createapi',
-  publicPath: process.env.NODE_ENV === 'production' ? '/createapi/' : '/',
+  }
 }

@@ -4,15 +4,18 @@
 > 掘金：[heiyehk的掘金](https://juejin.im/user/5c417f7ee51d45524c7cea18)  
 > 项目仓库地址：[CreateApi](https://github.com/heiyehk/createapi)
 
+#### CreateAPI
+在线生成你所需要的数据
+
 #### 框架([Vue Cli](https://cli.vuejs.org/zh/))
 使用vuecli的`TypeScript`进行开发
-> Project setup
-> `npm i`
+> Project setup  
+> `npm install`
 >
-> Compiles and hot-reloads for development
+> Compiles and hot-reloads for development  
 > `npm run serve`
 >
-> Compiles and minifies for production
+> Compiles and minifies for production  
 > `npm run build`
 
 #### 编码([CodeMirror](https://codemirror.net/))
@@ -21,10 +24,28 @@
 #### 数据([Mock.js](http://mockjs.com/))
 使用`Mock.js`进行数据生成
 
-包含代码示例，代码块放大缩小；本地缓存以及下载；选项功能暂未开发完毕还没有想好加哪些东西；
-#### 未来开发的新功能
-初步定下
-- 本地缓存使用过的代码
-- 增加选项功能，内含设置功能
-  1. 代码缩进2,4,自定义
-  2. 查看本地缓存的代码块，可进行删，查
+包含代码示例，代码块放大缩小；数据下载；选项功能暂未开发完毕还没有想好加哪些东西；
+
+#### MIT
+
+MIT License
+
+Copyright (c) 2020 heiyehk
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
