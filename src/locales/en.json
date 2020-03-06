@@ -1,6 +1,5 @@
 {
   "generate": "generate",
-  "example": "example",
   "save": "save",
   "reset": "reset",
   "guide": "guide",

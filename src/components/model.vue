@@ -3,7 +3,7 @@
     <div class="c-model-cover"></div>
     <div class="c-model-content flex-dcolumn">
       <div class="c-m-top flex-between">
-        <div class="title">标题</div>
+        <div class="title">{{title}}</div>
         <div class="close">
           <i class="iconfont icon-close" @click="close"></i>
         </div>
@@ -13,7 +13,7 @@
       </div>
       <div class="c-m-bottom">
         <div class="btns flex-center">
-          <Button type="primary">确认</Button>
+          <Button type="primary" @click="confirm">确认</Button>
           <Button @click="cancel">取消</Button>
         </div>
       </div>
@@ -22,23 +22,25 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Emit } from 'vue-property-decorator';
+import { Vue, Component, Emit, Prop } from 'vue-property-decorator';
 import Button from './button.vue';
 
 @Component
 export default class Model extends Vue {
-  private show() {
+  @Prop(String) private title!: string;
+
+  private mounted() {
     document.body.appendChild(this.$el);
   }
 
-  private close() {
-    this.$el.remove();
-  }
+  @Emit('on-close')
+  private close() {}
 
-  @Emit('on-cencel')
-  private cancel() {
-    this.close();
-  }
+  @Emit('on-confirm')
+  private confirm() {}
+
+  @Emit('on-cancel')
+  private cancel() {}
 }
 </script>
 
@@ -69,7 +71,7 @@ export default class Model extends Vue {
     border-radius: 5px;
     padding: 20px;
     box-sizing: border-box;
-    transform: translate(-50%, -50%);
+    animation: fadeInDown .5s forwards;
     .c-m-content{
       margin: 20px 0;
     }

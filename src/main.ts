@@ -10,6 +10,7 @@ import Model from '@/components/model.vue';
 
 Vue.component('Button', Button);
 Vue.component('Select', Select);
+Vue.component('Model', Model);
 
 Vue.config.productionTip = false;
 

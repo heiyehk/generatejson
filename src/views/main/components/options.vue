@@ -17,14 +17,17 @@
       <div class="op-item-input">
         <input type="text" />
       </div>
-    </div> -->
+    </div>-->
     <div class="op-item" v-if="localData.length">
       <div class="op-item-title">代码列表</div>
       <div class="op-item-input">
         <template v-for="(item, index) in localData">
-          <div class="local-code flex-between" :key="index">
-            <div class="time hidden">{{item.time}}</div>
-            <div class="content hidden">{{item.json | splitStrToStar(50)}}</div>
+          <div class="local-code" :key="index" @click="setCode(item)">
+            <div class="top flex-between">
+              <div class="name">{{item.name}}</div>
+              <div class="time hidden">{{item.time}}</div>
+            </div>
+            <div class="content hidden">{{item.json | splitStrToStar(100)}}</div>
           </div>
         </template>
       </div>
@@ -37,6 +40,7 @@ import { Vue, Component, Prop, Watch, Emit } from 'vue-property-decorator';
 import drawer from '@/components/drawer.vue';
 
 interface LocalDataType {
+  name: string;
   time: string;
   json: string;
 }
@@ -72,10 +76,19 @@ export default class Options extends Vue {
     this.viewStatus = nv;
   }
 
+  @Watch('$store.state.localDataAPI')
+  private watchAPI(nv: LocalDataType[]) {
+    this.localData = nv;
+  }
+
   @Emit('input')
   private change() {
     this.viewStatus = false;
     return this.viewStatus;
+  }
+
+  private setCode(item: LocalDataType) {
+    this.$store.state.storeCode = item;
   }
 }
 </script>
@@ -89,29 +102,34 @@ export default class Options extends Vue {
   &-title {
     font-size: 16px;
     padding: 5px 10px;
+    border-bottom: 1px solid #ccc;
   }
   &-input {
     font-size: 15px;
   }
   .local-code {
-    height: 36px;
-    padding: 0 10px;
+    padding: 6px 10px;
+    margin: 4px 0;
     cursor: pointer;
     position: relative;
     &:hover {
       background-color: @background;
     }
-    .content {
-      max-width: 50%;
+    .top {
+      font-size: 14px;
+      margin-bottom: 5px;
     }
-    &::before {
-      content: '';
-      position: absolute;
-      height: 100%;
-      width: 20%;
-      background-image: linear-gradient(to right, transparent 10%, #fff 90%);
-      top: 0;
-      right: 0;
+    .content {
+      position: relative;
+      &::before {
+        content: '';
+        position: absolute;
+        height: 100%;
+        width: 20%;
+        background-image: linear-gradient(to right, transparent 10%, #fff 90%);
+        top: 0;
+        right: 0;
+      }
     }
   }
 }

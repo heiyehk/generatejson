@@ -6,7 +6,6 @@
       </div>
       <div class="c-t-h flex-items">
         <Button type="primary" @click="generateMock">{{$t('generate')}}</Button>
-        <Button type="success" @click="showDemoCode">{{$t('example')}}</Button>
         <Button type="gray" @click="resetValues">{{$t('reset')}}</Button>
       </div>
       <div class="r-t-h flex-items">
@@ -14,7 +13,13 @@
         <a @click="aboutStatus = true;">{{$t('about')}}</a>
         <!-- <a @click="aboutStatus = true;">{{$t('version')}}</a> -->
         <a @click="optionsStatus = true;">{{$t('options')}}</a>
-        <Select v-model="$i18n.locale" :list="oplist" label="label" val="value" style="width: 120px;margin-left: 20px;"></Select>
+        <Select
+          v-model="$i18n.locale"
+          :list="oplist"
+          label="label"
+          val="value"
+          style="width: 120px;margin-left: 20px;"
+        ></Select>
       </div>
     </div>
     <div class="code-content flex-between flex1">
@@ -31,7 +36,7 @@
             :class="isAmplification && displayType === 'code' ? 'icon-zoomout' : 'icon-amplification'"
             @click="amplification($event, 'code')"
           ></i>
-          <i class="iconfont icon-save" title="保存" @click="saveCode"></i>
+          <i class="iconfont icon-save" title="保存" @click="saveEvent"></i>
         </div>
       </div>
       <div class="c-cc-line" @mousedown="lineDown" @mouseup="lineUp" :style="linStyle">=</div>
@@ -55,6 +60,21 @@
     <drawer v-model="viewStatus" title="Mockjs指南" :content="documentHtml"></drawer>
     <drawer v-model="aboutStatus" title="关于CreateAPI" :content="aboutHtml"></drawer>
     <options v-model="optionsStatus"></options>
+    <model
+      title="保存"
+      v-if="!saveModelHidden"
+      @on-confirm="saveCode"
+      @on-close="saveModelHidden = true; saveItemName = '';"
+      @on-cancel="saveModelHidden = true; saveItemName = '';"
+    >
+      <hyinput
+        ref="saveRef"
+        style="width: 100%;"
+        type="text"
+        v-model="saveItemName"
+        @validate="validate"
+      />
+    </model>
   </div>
 </template>
 
@@ -66,6 +86,7 @@ import Utils from '@/utils/util';
 import drawer from '@/components/drawer.vue';
 import model from '@/components/model.vue';
 import cover from '@/components/cover.vue';
+import hyinput from '@/components/hyinput.vue';
 import options from './components/options.vue';
 
 // mockjs
@@ -84,6 +105,8 @@ import 'codemirror/addon/fold/foldgutter.css';
 // 自动闭合{}[]""''
 import 'codemirror/addon/edit/closebrackets';
 
+// 格式化
+import 'codemirror/addon/lint/json-lint'
 /**
  * 也可以使用下面这种方式
  * @require const documentMd = require('@/markdown/document.md');
@@ -94,6 +117,7 @@ import documentMd from '@/markdown/guide.md';
 import aboutMd from '@/markdown/about.md';
 
 interface LocalDataType {
+  name: string;
   time: string;
   json: string;
 }
@@ -102,7 +126,8 @@ interface LocalDataType {
   components: {
     drawer,
     cover,
-    options
+    options,
+    hyinput
   }
 })
 export default class Main extends Vue {
@@ -117,23 +142,16 @@ export default class Main extends Vue {
     }
   ];
   private editor: codemirror.Editor;
-  private demoCode: string = `{
-  "data|20": [
-    {
-      "name": "@cname()",
-      "uid": "@guid()",
-      "address": "@county()",
-      "avatar": "@Image('100x100','@color')"
-    }
-  ]
-}
-`;
   private defaultCode: string = `/**
- * 请使用json格式
- * 20条
+ * 请严格使用json格式，需要注意的是在生成的数据外围总是包含着{"data": []}
+ * {
+ *    "data": [
+ *        // todo
+ *    ]
+ * }
  */
 {
-  "data|20": [
+  "data|5": [
     {
       // 姓名
       "name": "@cname()",
@@ -142,7 +160,15 @@ export default class Main extends Vue {
       // 地址
       "address": "@county()",
       // 头像
-      "avatar": "@Image('100x100','@color')"
+      "avatar": "@Image('100x100','@color')",
+      // 生日
+      "birthday": "@date('yyyy-MM-dd HH:mm:ss')",
+      // 创建时间
+      "create_time": "@date('yyyy-MM-dd HH:mm:ss')",
+      // 更新时间
+      "update_time": "@date('yyyy-MM-dd HH:mm:ss')",
+      // 描述
+      "description": "@cword(20, 50)"
     }
   ]
 }
@@ -155,12 +181,17 @@ export default class Main extends Vue {
   private langs: string[] = ['en', 'zh'];
   private isAmplification: boolean = false;
   private displayType: string = '';
+  private saveStatus: boolean = false;
+
+  // 保存时的名字
+  private saveItemName: string = '';
 
   // 显示
   private viewStatus: boolean = false;
   private aboutStatus: boolean = false;
   private optionsStatus: boolean = false;
   private shows: boolean = true;
+  private saveModelHidden: boolean = true;
 
   // 缓存
   private localData: LocalDataType[] = [];
@@ -177,49 +208,96 @@ export default class Main extends Vue {
   }
 
   private created() {
-    const localData: string | null = localStorage.getItem('createapi');
-    if (localData) {
-      try {
-        this.localData = JSON.parse(localData);
-      } catch (error) {
-        this.localData = [];
-        // this.errorMessage = '本地缓存数据出错，请检查';
-      }
-    }
-    this.documentHtml = documentMd;
-    this.aboutHtml = aboutMd;
+    this.getLocalStorage();
+    this.clientX = window.innerWidth / 2 + 'px';
+    this.documentHtml = documentMd.replace(
+      /href="*/g,
+      'target="_brank" href="'
+    );
+    this.aboutHtml = aboutMd.replace(/href="*/g, 'target="_brank" href="');
     document.addEventListener('keydown', this.keydownEsc);
   }
 
   private mounted() {
     this.editorInit();
+    this.disposeParams();
     document.addEventListener('click', () => {
       document.removeEventListener('mousemove', this.lineMove);
     });
   }
 
-  private editorInit() {
-    this.editor = codemirror.fromTextArea(this.$refs.editor as HTMLTextAreaElement, {
-      value: this.defaultCode,
-      mode: { name: 'javascript', json: true },
-      lineNumbers: true, // 显示行号
-      smartIndent: true, // 自动缩进
-      foldGutter: true,
-      autoCloseBrackets: true, // 自动关闭
-      gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
-    });
-    this.mockJson = codemirror.fromTextArea(this.$refs.mockjson as HTMLTextAreaElement, {
-      mode: { name: 'javascript', json: true },
-      lineNumbers: true, // 显示行号
-      smartIndent: true, // 自动缩进
-      readOnly: true,
-      foldGutter: true,
-      gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
-    });
+  private disposeParams() {
+    const that = this;
+    const { typeFullScreen, pathMatch } = this.$route.params;
+    if (typeFullScreen && typeFullScreen === 'code') {
+      this.isAmplification = true;
+      this.displayType = 'code';
+    } else if (typeFullScreen && typeFullScreen === 'output') {
+      this.isAmplification = true;
+      this.displayType = 'output';
+    }
+    if (!pathMatch) {
+      return false;
+    }
+    try {
+      this.editor.setValue(JSON.stringify(JSON.parse(pathMatch), null, 4));
+      this.generateMock();
+    } catch(error) {
+      this.editor.setValue(pathMatch);
+      that.mockJson.setValue(Utils.catchError(error.message));
+      that.mockJson.setOption('mode', 'text/text');
+      that.isAmplification = false;
+      that.displayType = '';
+    }
   }
+
+  private getLocalStorage() {
+    const localStorageAPI: string | null = localStorage.getItem('createapi');
+    if (localStorageAPI) {
+      const localDataAPI = JSON.parse(
+        localStorage.getItem('createapi') as string
+      );
+      this.localData = localDataAPI;
+      this.$store.state.localDataAPI = localDataAPI;
+    }
+  }
+  private editorInit() {
+    this.editor = codemirror.fromTextArea(
+      this.$refs.editor as HTMLTextAreaElement,
+      {
+        value: this.defaultCode,
+        mode: { name: 'javascript', json: true },
+        lineNumbers: true, // 显示行号
+        smartIndent: true, // 自动缩进
+        foldGutter: true,
+        autoCloseBrackets: true, // 自动关闭
+        lineWrapping: true,
+        gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
+      }
+    );
+    this.mockJson = codemirror.fromTextArea(
+      this.$refs.mockjson as HTMLTextAreaElement,
+      {
+        mode: { name: 'javascript', json: true },
+        lineNumbers: true, // 显示行号
+        smartIndent: true, // 自动缩进
+        readOnly: true,
+        foldGutter: true,
+        lineWrapping: true,
+        gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
+      }
+    );
+  }
+
+  private validationJson() {}
 
   // 生成
   private generateMock() {
+    if (!this.editor.getValue()) {
+      this.mockJson.setValue('Please generate data first!');
+      this.mockJson.setOption('mode', 'text/text');
+      return;
+    }
     const that = this;
     try {
       this.mockJson.setOption('mode', 'text/javascript');
@@ -232,25 +310,29 @@ export default class Main extends Vue {
       const data = mockjs.mock(jsonMockValue).data;
       this.mockJson.setValue(JSON.stringify(data, null, 4));
     } catch (error) {
-      that.mockJson.setValue(error.message);
+      that.mockJson.setValue(Utils.catchError(error.message));
       that.mockJson.setOption('mode', 'text/text');
+      that.isAmplification = false;
+      that.displayType = '';
     }
-  }
-
-  // 示例
-  private showDemoCode() {
-    this.editor.setValue(this.demoCode);
-    this.generateMock();
   }
 
   // 保存
   private saveCode() {
-    // const data: LocalDataType = {
-    //   time: Utils.getTime('YYYY-MM-DD'),
-    //   json: this.editor.getValue()
-    // };
-    // this.localData.push(data);
-    // localStorage.setItem('createapi', JSON.stringify(this.localData));
+    (this.$refs.saveRef as any).changeStatus();
+    if (!this.saveStatus) {
+      return false;
+    }
+    const data: LocalDataType = {
+      name: this.saveItemName,
+      time: Utils.getTime('YYYY-MM-DD'),
+      json: this.editor.getValue()
+    };
+    this.localData.push(data);
+    this.$store.state.localDataAPI = this.localData;
+    localStorage.setItem('createapi', JSON.stringify(this.localData));
+    this.saveItemName = '';
+    this.saveModelHidden = true;
   }
 
   // 重置
@@ -258,6 +340,7 @@ export default class Main extends Vue {
     this.editor.setValue(this.defaultCode);
     this.mockJson.setValue('');
     this.clientX = '50%';
+    this.$router.push('/')
   }
 
   // 线条被按下
@@ -303,6 +386,23 @@ export default class Main extends Vue {
     }
   }
 
+  /**
+   * todo
+   * 验证输入的内容
+   */
+  private saveEvent() {
+    try {
+      const editorCode = this.editor
+        .getValue()
+        .replace(/(?:^|\n|\r)\s*\/\*[\s\S]*?\*\/\s*(?:\r|\n|$)/g, '')
+        .replace(/\/\/.+/g, '');
+      // 去除注释之后判断是否为json格式
+      if (/^\{\w\W|}$/.test(editorCode.trim())) {
+        this.saveModelHidden = false;
+      }
+    } catch (error) {}
+  }
+
   // esc按下
   private keydownEsc(e: KeyboardEvent) {
     if (e.keyCode === 27) {
@@ -318,7 +418,7 @@ export default class Main extends Vue {
 
   private mockDataDownload() {
     const mockJsonData = this.mockJson.getValue();
-    if (!mockJsonData || !/^\[(.+|)\]$/.test(mockJsonData)) {
+    if (!mockJsonData || !/^\[\w\W|]$/.test(mockJsonData)) {
       this.mockJson.setValue('Please generate data first!');
       this.mockJson.setOption('mode', 'text/text');
       return;
@@ -338,6 +438,10 @@ export default class Main extends Vue {
   private destroyed() {
     // 消除esc按下事件
     document.removeEventListener('keydown', this.keydownEsc);
+  }
+
+  private validate(data: boolean) {
+    this.saveStatus = data;
   }
 }
 </script>
@@ -432,12 +536,11 @@ export default class Main extends Vue {
   .amplification {
     position: fixed !important;
     z-index: 14;
-    width: 100%;
+    width: 100% !important;
     height: 100%;
     top: 0;
     left: 0;
     opacity: 1;
-    transition: all 0.3s;
   }
 }
 .oper-icons {

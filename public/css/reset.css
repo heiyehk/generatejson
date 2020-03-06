@@ -63,9 +63,7 @@ html, body, #app{width: 100%;height: 100%;overflow: hidden;color: #515a6e;}
 
 .icon {width: 1em;height: 1em;vertical-align: -0.15em;fill: currentColor;overflow: hidden;}
 
-/* 按钮波浪 */
-.btnwaves{position: relative;}
-.btnwaves::before{content: '';position: absolute;}
+input[type="text"]{width: 100%;border: none;border: 1px solid #ccc;height: 32px;padding: 0 10px;box-sizing: border-box;font-size: 14px;}
 
 /* 滚动条 */
 ::-webkit-scrollbar{width: 8px;height: 8px;}
@@ -78,7 +76,7 @@ html, body, #app{width: 100%;height: 100%;overflow: hidden;color: #515a6e;}
 .CodeMirror-activeline-background{background:#f8f8f9!important;}
 .cm-s-default .cm-tag{color:#3e76f6!important;}
 .cm-s-default .cm-attribute{color:#e96900!important;}
-.cm-s-default .cm-string{color:#31a36f!important;}
+.cm-s-default .cm-string{color:#31a36f!important;word-break: break-all;}
 .cm-s-default .cm-meta,.cm-s-default .cm-qualifier{color:#e96900!important;}
 .cm-s-default .cm-property{color:#6a6170!important;}
 .cm-s-default .cm-atom{color:#42b983!important;}
@@ -88,3 +86,16 @@ html, body, #app{width: 100%;height: 100%;overflow: hidden;color: #515a6e;}
 .cm-s-default .cm-bracket.cm-tag{color:#525252!important;}
 .cm-s-default .cm-comment{color:#b3b3b3!important;}
 .CodeMirror-gutters {min-height: 100% !important;}
+
+@keyframes fadeInDown {
+  from {
+    transform: scale(.9);
+    transform: translate(-50%, -80%);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+}

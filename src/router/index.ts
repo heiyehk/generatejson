@@ -1,14 +1,24 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import main from '../views/main/index.vue';
+import index from '../views/main/index.vue';
 
 Vue.use(VueRouter);
 
 const routes = [
   {
     path: '/',
-    name: 'main',
-    component: main
+    name: 'index',
+    component: index
+  },
+  {
+    path: '/:typeFullScreen/*',
+    name: 'index',
+    component: index
+  },
+  {
+    path: '/*',
+    name: 'index',
+    component: index
   }
 ];
 

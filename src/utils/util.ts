@@ -1,7 +1,5 @@
-type GetTime = (formatter: string, time?: string | Date) => string;
-
 class Utils {
-  public getTime: GetTime = (formatter: string, time: string | Date = '') => {
+  public getTime(formatter: string, time?: string | Date): string {
     const date = (time ? new Date(time) : new Date());
     const Y = date.getFullYear() + '';
     const M = date.getMonth() + 1;
@@ -16,6 +14,17 @@ class Utils {
       .replace(/HH|hh/g, (H < 10 ? '0' : '') + H)
       .replace(/mm/g, (m < 10 ? '0' : '') + m)
       .replace(/ss/g, (s < 10 ? '0' : '') + s);
+  }
+
+  public catchError(str: string): string {
+    if (str.includes('in JSON at position')) {
+      // 不是json格式
+      return 'Please enter something in `json` format';
+    } else if (str.includes(`property 'split' of`)) {
+      // 没有data格式
+      return 'Please enter a format containing `data`';
+    }
+    return 'unknown error';
   }
 }
 
