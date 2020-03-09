@@ -22,7 +22,7 @@
     "no-trailing-whitespace": false,
     "no-var-keyword": true,
     "triple-equals": true,
-    "no-empty": [true, "allow-empty-catch"],
+    "no-empty": false,
     "no-for-in-array": true,
     "no-parameter-reassignment": true,
     "no-duplicate-variable": [true, "check-parameters"],

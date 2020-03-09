@@ -15,7 +15,7 @@ Vue.component('Model', Model);
 Vue.config.productionTip = false;
 
 Object.keys(filters).forEach((key: string) => {
-  Vue.filter(key, filters[key]);
+  Vue.filter(key, (filters as any)[key]);
 });
 
 new Vue({

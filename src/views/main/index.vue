@@ -1,9 +1,9 @@
 <template>
   <div class="page flex-dcolumn">
     <div class="top-header flex-between">
-      <div class="l-t-h">
+      <h1 class="l-t-h">
         <router-link to="/">Generate JSON</router-link>
-      </div>
+      </h1>
       <div class="c-t-h flex-items">
         <Button type="primary" @click="generateMock">{{$t('generate')}}</Button>
         <Button type="gray" @click="resetValues">{{$t('reset')}}</Button>
@@ -37,6 +37,7 @@
             @click="amplification($event, 'code')"
           ></i>
           <i class="iconfont icon-save" title="保存" @click="saveEvent"></i>
+          <i class="iconfont icon-share" title="分享" @click="shareJson"></i>
         </div>
       </div>
       <div class="c-cc-line" @mousedown="lineDown" @mouseup="lineUp" :style="linStyle">=</div>
@@ -79,7 +80,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator';
+import { Vue, Component, Watch } from 'vue-property-decorator';
 import Utils from '@/utils/util';
 
 // 组件
@@ -91,6 +92,9 @@ import options from './components/options.vue';
 
 // mockjs
 import mockjs from 'mockjs';
+
+// copy
+import VueClipboard from 'vue-clipboard2';
 
 // codemirror
 import codemirror from 'codemirror';
@@ -106,7 +110,7 @@ import 'codemirror/addon/fold/foldgutter.css';
 import 'codemirror/addon/edit/closebrackets';
 
 // 格式化
-import 'codemirror/addon/lint/json-lint'
+// import 'codemirror/addon/lint/json-lint';
 /**
  * 也可以使用下面这种方式
  * @require const documentMd = require('@/markdown/document.md');
@@ -121,6 +125,8 @@ interface LocalDataType {
   time: string;
   json: string;
 }
+
+Vue.use(VueClipboard);
 
 @Component({
   components: {
@@ -227,7 +233,6 @@ export default class Main extends Vue {
   }
 
   private disposeParams() {
-    const that = this;
     const { typeFullScreen, pathMatch } = this.$route.params;
     if (typeFullScreen && typeFullScreen === 'code') {
       this.isAmplification = true;
@@ -240,15 +245,20 @@ export default class Main extends Vue {
       return false;
     }
     try {
-      const replacePathMatch = pathMatch.replace(/\/\/ \S.+? /g, '\r\n\$& \r\n').replace(/\*\//g, '*\/\r\n');
-      this.editor.setValue(replacePathMatch);
+      const replacePathMatch = pathMatch
+        .replace(/\/\/ \S.+? /g, '\r\n$& \r\n')
+        .replace(/\*\//g, '*/\r\n');
+      const json = replacePathMatch
+        .replace(/(?:^|\n|\r)\s*\/\*[\s\S]*?\*\/\s*(?:\r|\n|$)/g, '')
+        .replace(/\/\/.+/g, '');
+      this.editor.setValue(JSON.stringify(JSON.parse(json), null, 4));
       this.generateMock();
     } catch (error) {
       this.editor.setValue(pathMatch);
-      that.mockJson.setValue(Utils.catchError(error.message));
-      that.mockJson.setOption('mode', 'text/text');
-      that.isAmplification = false;
-      that.displayType = '';
+      this.mockJson.setValue(Utils.catchError(error.message));
+      this.mockJson.setOption('mode', 'text/text');
+      this.isAmplification = false;
+      this.displayType = '';
     }
   }
 
@@ -290,8 +300,6 @@ export default class Main extends Vue {
     );
   }
 
-  private validationJson() {}
-
   // 生成
   private generateMock() {
     if (!this.editor.getValue()) {
@@ -299,7 +307,6 @@ export default class Main extends Vue {
       this.mockJson.setOption('mode', 'text/text');
       return;
     }
-    const that = this;
     try {
       this.mockJson.setOption('mode', 'text/javascript');
       const jsonMockValue = JSON.parse(
@@ -311,11 +318,10 @@ export default class Main extends Vue {
       const data = mockjs.mock(jsonMockValue).data;
       this.mockJson.setValue(JSON.stringify(data, null, 4));
     } catch (error) {
-      console.log(error)
-      that.mockJson.setValue(Utils.catchError(error.message));
-      that.mockJson.setOption('mode', 'text/text');
-      that.isAmplification = false;
-      that.displayType = '';
+      this.mockJson.setValue(Utils.catchError(error.message));
+      this.mockJson.setOption('mode', 'text/text');
+      this.isAmplification = false;
+      this.displayType = '';
     }
   }
 
@@ -337,12 +343,22 @@ export default class Main extends Vue {
     this.saveModelHidden = true;
   }
 
+  // 分享
+  private shareJson() {
+    const code = location.host + '/#/' + this.editor.getValue();
+    this.$copyText(code).then((e: any) => {
+      console.log('copy');
+    });
+  }
+
   // 重置
   private resetValues() {
     this.editor.setValue(this.defaultCode);
     this.mockJson.setValue('');
     this.clientX = '50%';
-    this.$router.push('/');
+    if (this.$route.path !== '/') {
+      this.$router.push('/');
+    }
   }
 
   // 线条被按下
@@ -445,6 +461,40 @@ export default class Main extends Vue {
   private validate(data: boolean) {
     this.saveStatus = data;
   }
+
+  @Watch('$store.state.storeCode')
+  private onSetStoreCode(nv: LocalDataType) {
+    if (this.$route.path !== '/') {
+      this.$router.push('/');
+    }
+    this.editor.setValue(
+      JSON.stringify(
+        JSON.parse(
+          nv.json
+            .replace(/(?:^|\n|\r)\s*\/\*[\s\S]*?\*\/\s*(?:\r|\n|$)/g, '')
+            .replace(/\/\/.+/g, '')
+        ),
+        null,
+        4
+      )
+    );
+    try {
+      this.mockJson.setOption('mode', 'text/javascript');
+      const jsonMockValue = JSON.parse(
+        this.editor
+          .getValue()
+          .replace(/(?:^|\n|\r)\s*\/\*[\s\S]*?\*\/\s*(?:\r|\n|$)/g, '')
+          .replace(/\/\/.+/g, '')
+      );
+      const data = mockjs.mock(jsonMockValue).data;
+      this.mockJson.setValue(JSON.stringify(data, null, 4));
+    } catch (error) {
+      this.mockJson.setValue(Utils.catchError(error.message));
+      this.mockJson.setOption('mode', 'text/text');
+      this.isAmplification = false;
+      this.displayType = '';
+    }
+  }
 }
 </script>
 
@@ -462,6 +512,7 @@ export default class Main extends Vue {
   position: relative;
   .l-t-h {
     font-size: 28px;
+    font-weight: 400;
   }
   .c-t-h {
     position: absolute;
