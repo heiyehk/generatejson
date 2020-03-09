@@ -345,7 +345,7 @@ export default class Main extends Vue {
 
   // 分享
   private shareJson() {
-    const code = location.host + '/#/' + this.editor.getValue();
+    const code = location.host + location.pathname + '/#/' + this.editor.getValue();
     this.$copyText(code).then((e: any) => {
       console.log('copy');
     });
