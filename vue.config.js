@@ -11,8 +11,8 @@ module.exports = {
     .end()
   },
 
-  outputDir: 'dist/createapi',
-  publicPath: process.env.NODE_ENV === 'production' ? '/createapi/' : '/',
+  outputDir: 'dist/generatejson',
+  publicPath: process.env.NODE_ENV === 'production' ? '/generatejson/' : '/',
 
   pluginOptions: {
     'style-resources-loader': {

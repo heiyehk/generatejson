@@ -3,5 +3,7 @@
   "save": "save",
   "reset": "reset",
   "guide": "guide",
-  "about": "about"
+  "about": "about",
+  "version": "version",
+  "options": "options"
 }

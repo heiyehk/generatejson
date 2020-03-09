@@ -2,7 +2,7 @@
   <div class="page flex-dcolumn">
     <div class="top-header flex-between">
       <div class="l-t-h">
-        <!-- <router-link to="/">CreateAPI</router-link> -->
+        <router-link to="/">Generate JSON</router-link>
       </div>
       <div class="c-t-h flex-items">
         <Button type="primary" @click="generateMock">{{$t('generate')}}</Button>
@@ -58,10 +58,10 @@
       @click="viewStatus = false; aboutStatus = false; optionsStatus = false;"
     ></cover>
     <drawer v-model="viewStatus" title="Mockjs指南" :content="documentHtml"></drawer>
-    <drawer v-model="aboutStatus" title="关于CreateAPI" :content="aboutHtml"></drawer>
+    <drawer v-model="aboutStatus" title="关于Generate JSON" :content="aboutHtml"></drawer>
     <options v-model="optionsStatus"></options>
     <model
-      title="保存"
+      title="保存本地名称"
       v-if="!saveModelHidden"
       @on-confirm="saveCode"
       @on-close="saveModelHidden = true; saveItemName = '';"
@@ -240,9 +240,10 @@ export default class Main extends Vue {
       return false;
     }
     try {
-      this.editor.setValue(JSON.stringify(JSON.parse(pathMatch), null, 4));
+      const replacePathMatch = pathMatch.replace(/\/\/ \S.+? /g, '\r\n\$& \r\n').replace(/\*\//g, '*\/\r\n');
+      this.editor.setValue(replacePathMatch);
       this.generateMock();
-    } catch(error) {
+    } catch (error) {
       this.editor.setValue(pathMatch);
       that.mockJson.setValue(Utils.catchError(error.message));
       that.mockJson.setOption('mode', 'text/text');
@@ -252,10 +253,10 @@ export default class Main extends Vue {
   }
 
   private getLocalStorage() {
-    const localStorageAPI: string | null = localStorage.getItem('createapi');
+    const localStorageAPI: string | null = localStorage.getItem('generatejson');
     if (localStorageAPI) {
       const localDataAPI = JSON.parse(
-        localStorage.getItem('createapi') as string
+        localStorage.getItem('generatejson') as string
       );
       this.localData = localDataAPI;
       this.$store.state.localDataAPI = localDataAPI;
@@ -310,6 +311,7 @@ export default class Main extends Vue {
       const data = mockjs.mock(jsonMockValue).data;
       this.mockJson.setValue(JSON.stringify(data, null, 4));
     } catch (error) {
+      console.log(error)
       that.mockJson.setValue(Utils.catchError(error.message));
       that.mockJson.setOption('mode', 'text/text');
       that.isAmplification = false;
@@ -330,7 +332,7 @@ export default class Main extends Vue {
     };
     this.localData.push(data);
     this.$store.state.localDataAPI = this.localData;
-    localStorage.setItem('createapi', JSON.stringify(this.localData));
+    localStorage.setItem('generatejson', JSON.stringify(this.localData));
     this.saveItemName = '';
     this.saveModelHidden = true;
   }
@@ -340,7 +342,7 @@ export default class Main extends Vue {
     this.editor.setValue(this.defaultCode);
     this.mockJson.setValue('');
     this.clientX = '50%';
-    this.$router.push('/')
+    this.$router.push('/');
   }
 
   // 线条被按下

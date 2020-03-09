@@ -2,12 +2,12 @@
 > 作者：heiyehk  
 > 邮箱：heiyehk@foxmail.com  
 > 掘金：[heiyehk的掘金](https://juejin.im/user/5c417f7ee51d45524c7cea18)
-> 项目仓库地址：[CreateApi](https://github.com/heiyehk/createapi)，[码云](https://gitee.com/heiyehk/createapi)同地址
+> 项目仓库地址：[Generate JSON](https://github.com/heiyehk/generatejson)，[码云](https://gitee.com/heiyehk/generatejson)同地址
 
-#### CreateAPI
+#### Generate JSON
 - 在线生成下载你所需要的数据
 - 所有数据只会留在你的电脑里
-- `createapi`不会获取你的任何信息。
+- `Generate JSON`不会获取你的任何信息。
 
 #### 框架([Vue Cli](https://cli.vuejs.org/zh/))
 使用vuecli的`TypeScript`进行开发
@@ -27,7 +27,7 @@
 使用`Mock.js`进行数据生成
 
 #### Markdown([markdown-loader](https://www.npmjs.com/package/markdown-loader))
-webpack插件，编译.md。createapi文档都是由.md转换
+webpack插件，编译.md。Generate JSON文档都是由.md转换
 
 #### MIT
 

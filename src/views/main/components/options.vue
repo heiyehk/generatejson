@@ -1,5 +1,5 @@
 <template>
-  <drawer v-model="viewStatus" width="30%">
+  <drawer v-model="viewStatus" width="30%" @on-close="viewStatus = false">
     <!-- <div class="op-item">
       <div class="op-item-title">空格缩进</div>
       <div class="op-item-input">
@@ -60,7 +60,7 @@ export default class Options extends Vue {
   private errorMessage: string = '';
 
   private mounted() {
-    const localData: string | null = localStorage.getItem('createapi');
+    const localData: string | null = localStorage.getItem('generatejson');
     if (localData) {
       try {
         this.localData = JSON.parse(localData);
